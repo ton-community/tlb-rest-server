@@ -432,7 +432,7 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
 
         // Store tag if present
         if (constructor.tag.bitLen > 0) {
-            const tag = parseInt(constructor.tag.binary, 2);
+            const tag = BigInt(constructor.tag.binary);
             builder.storeUint(tag, constructor.tag.bitLen);
         }
 
