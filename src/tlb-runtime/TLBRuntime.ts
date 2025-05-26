@@ -148,20 +148,20 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
     }
 
     serialize(data: T): Result<Builder> {
-        const kind = (data as TypedCell).kind;
-        if (!kind) {
+        const typeKind = (data as TypedCell).kind;
+        if (!typeKind) {
             return {
                 ok: false,
                 error: new TLBDataError('Data must by typed'),
             };
         }
-        const sep = kind.indexOf('_');
-        const typeName = kind.slice(0, sep);
-        return this.serializeByTypeName(typeName, data);
+        return this.serializeByTypeName(typeKind, data);
     }
 
     // Serialize data to a Builder based on a TL-B type name
-    serializeByTypeName(typeName: string, data: T): Result<Builder> {
+    serializeByTypeName(typeKind: string, data: T): Result<Builder> {
+        const sep = typeKind.indexOf('_');
+        const typeName = sep === -1 ? typeKind : typeKind.slice(0, sep);
         const type = this.types.get(typeName);
         if (!type) {
             return {
@@ -423,11 +423,20 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private serializeType(type: TLBType, data: any, builder: Builder): void {
         // Find matching constructor by kind
-        const constructorName = (data as TypedCell).kind.substring(type.name.length + 1); // Remove TypeName_ prefix
+        const typeKind = (data as TypedCell).kind;
+        if (!typeKind) {
+            throw new TLBDataError('Data must by typed');
+        }
 
-        const constructor = type.constructors.find((c) => c.name === constructorName);
+        const constructorName = typeKind.substring(type.name.length + 1); // Remove TypeName_ prefix
+        let constructor: TLBConstructor | undefined;
+        if (constructorName) {
+            constructor = type.constructors.find((c) => c.name === constructorName);
+        } else if (type.constructors.length > 0) {
+            constructor = type.constructors[0];
+        }
         if (!constructor) {
-            throw new TLBDataError(`Constructor ${constructorName} not found for type ${type.name}`);
+            throw new TLBDataError(`Constructor not found for type ${typeKind}`);
         }
 
         // Store tag if present
