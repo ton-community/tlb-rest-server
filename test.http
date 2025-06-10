@@ -1,0 +1,25 @@
+POST {{host}}/parse
+Content-Type: application/json
+
+{
+  "schema": "foo$01 v:uint32 = Foo;bar$10 v:uint128 = Bar;",
+  "cell": "te6cckEBAQEABwAACUAAAAqgsDZXlg=="
+}
+
+###
+POST {{host}}/parse
+Content-Type: application/json
+
+{
+  "schema": "message#_ len:uint7 {len <= 127} text:(bits len * 8) = Message;",
+  "cell": "te6cckEBAQEAFwAAKSioyuboQNrK5ubCzspA0txAxsrY2Whv0fw="
+}
+
+###
+POST {{host}}/parse
+Content-Type: application/json
+
+{
+  "schema": "message#_ len:uint7 {len <= 127} text:(bits len * 8) = Message;",
+  "cell": "te6cckEBAQEAFwAAKSioyuboQNrK5ubCzspA0txAxsrY2Whv0fw="
+}

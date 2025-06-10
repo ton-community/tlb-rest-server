@@ -1,0 +1,210 @@
+openapi: 3.1.0
+info:
+  title: TLB Parser API
+  version: 1.0.0
+  description: API for parsing cells based on TL-B schema
+servers:
+  - url: http://localhost:3000
+
+paths:
+  /parse:
+    post:
+      summary: Parse a cell based on TL-B schema
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                schema:
+                  description: TL-B schema
+                  required: true
+                  type: string
+                  example: foo$01 v:uint32 = Foo;bar$10 v:uint128 = Bar;
+                cell:
+                  description: Cell in base64 format
+                  required: true
+                  type: string
+                  format: byte
+                  example: "te6cckEBAQEABwAACUAAAAqgsDZXlg=="
+      responses:
+        '200':
+          description: Successful parse response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  result:
+                    type: object
+                    properties:
+                      parsedCell:
+                        type: any
+                        description: Cell parsed to json
+                        example:
+                          kind: Foo_foo
+                          v: 42
+                      meta:
+                        description: Optional meta
+                        oneOf:
+                          - type: "null"
+                        nullable: true
+        '400':
+          description: Parsing failed (e.g., invalid TLB schema or cell)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+        '422':
+          description: Validation error in request body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+        '500':
+          description: Unexpected parsing failure
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Internal server error"
+
+  /try-parse:
+    post:
+      summary: Try to parse a cell without providing a TL-B schema
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cell:
+                  description: Cell in base64 format
+                  type: string
+                  required: true
+                  format: byte
+                  example: "te6cckEBAgEAywABsA+KfqUADpIH1lB9/kBfXhAIAO87mQKicbKgHIk4pSPP4k5xhHqutqYgAB7USnesDnCdABSzBN6cnxDwDjn/IQXqgU8OJXUMcol9pxyL+yLkpKzYiA7msoEBANslk4VhgAIqFqMWTE1aoxM/MRD/EEluAMqKyKvv/FAn4CTTNIDD6gjOY1bdABSzBN6cnxDwDjn/IQXqgU8OJXUMcol9pxyL+yLkpKzYsAJXpnI3GpDhSbfSWGTb/USCfMHoow3xseDEM4UCreKtluqcoI0="
+      responses:
+        '200':
+          description: Successfully parsed cell
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  result:
+                    type: object
+                    properties:
+                      parsedCell:
+                        type: object
+                        example:
+                          opCode: 260734629
+                          schema: jettons
+                          internal: jetton_transfer
+                          data:
+                            kind: JettonTransfer
+                            query_id: "4101212031974910"
+                            amount: "100000000"
+                            destination: "EQB3ncyBUTjZUA5EnFKR5_EnOMI9V1tTEAAPaiU71gc4TiUt"
+                            response_destination: "EQBSzBN6cnxDwDjn_IQXqgU8OJXUMcol9pxyL-yLkpKzYs9U"
+                            custom_payload:
+                              kind: Maybe_nothing
+                            forward_ton_amount: "125000000"
+                            forward_payload:
+                              kind: Either_right
+                              value:
+                                parsed: {}
+        '400':
+          description: Parsing failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+        '422':
+          description: Validation error in request body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Internal server error"
+
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      description: Exposes Prometheus metrics about the server
+      responses:
+        '200':
+          description: Prometheus-formatted metrics
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /health:
+    get:
+      summary: Healthcheck
+      responses:
+        '200':
+          description: Service is on
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  uptime:
+                    type: number
+                  timestamp:
+                    type: number

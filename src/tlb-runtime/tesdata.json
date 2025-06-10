@@ -1,0 +1,86 @@
+[
+  [
+    "tmpa$_ a:# b:# = Simple;",
+    {
+      "kind": "Simple",
+      "a": 827,
+      "b": 387
+    },
+    "te6cckEBAQEACgAAEAAAAzsAAAGDtn3/EA=="
+  ],
+  [
+    "bool_false$0 a:# b:(## 7) c:# = TwoConstructors;bool_true$1 b:# = TwoConstructors;",
+    {
+      "kind": "TwoConstructors_bool_false",
+      "a": 1000,
+      "b": 10,
+      "c": 1000
+    },
+    "te6cckEBAQEACwAAEgAAAfQKAAAD6FedIMM="
+  ],
+  [
+    "bool_false$0 a:# b:(## 7) c:# = TwoConstructors;bool_true$1 b:# = TwoConstructors;",
+    {
+      "kind": "TwoConstructors_bool_true",
+      "b": 1000
+    },
+    "te6cckEBAQEABwAACYAAAfRA0g+UOQ=="
+  ],
+  [
+    "tmpb$_ y:(## 5) = FixedIntParam;tmpc$_ y:FixedIntParam c:# = TypedField;",
+    {
+      "kind": "TypedField",
+      "c": 5,
+      "y": {
+        "kind": "FixedIntParam",
+        "y": 10
+      }
+    },
+    "te6cckEBAQEABwAACVAAAAAsnVCRbA=="
+  ],
+  [
+    "nothing$0 {TheType:Type} = Maybe TheType;just$1 {TheType:Type} value:TheType = Maybe TheType;tmpd#_ y:FixedIntParam c:# = SharpConstructor;tmpb$_ y:(## 5) = FixedIntParam;thejust$_ x:(Maybe SharpConstructor) = TypedParam;",
+    {
+      "kind": "TypedParam",
+      "x": {
+        "kind": "Maybe_just",
+        "value": {
+          "kind": "SharpConstructor",
+          "c": 5,
+          "y": {
+            "kind": "FixedIntParam",
+            "y": 6
+          }
+        }
+      }
+    },
+    "te6cckEBAQEABwAACZgAAAAWd4UEqw=="
+  ],
+  [
+    "nothing$0 {TheType:Type} = Maybe TheType;just$1 {TheType:Type} value:TheType = Maybe TheType;thejust$_ x:(Maybe SharpConstructor) = TypedParam;",
+    {
+      "kind": "TypedParam",
+      "x": {
+        "kind": "Maybe_nothing"
+      }
+    },
+    "te6cckEBAQEAAwAAAUD20kA0"
+  ],
+  [
+    "a$_ const:# = CheckKeyword;",
+    {
+      "kind": "CheckKeyword",
+      "const0": 3
+    },
+    "te6cckEBAQEABgAACAAAAAMX8/8c"
+  ],
+  [
+    "message#_ len:uint7 {len <= 127} text:(bits len * 8) = Message;",
+    {
+      "kind": "Message",
+      "len": 20,
+      "text": "Test message in cell"
+    },
+    "te6cckEBAQEAFwAAKSioyuboQNrK5ubCzspA0txAxsrY2Whv0fw="
+  ]
+]

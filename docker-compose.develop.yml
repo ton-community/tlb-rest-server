@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  api:
+    build:
+      context: .
+    environment:
+      - PORT=3000 # if not set 3000 is used
+    ports:
+      - "3000:3000"
