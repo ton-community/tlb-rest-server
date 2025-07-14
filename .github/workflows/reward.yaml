@@ -3,7 +3,7 @@ name: Reward
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   reward:
