@@ -21,6 +21,7 @@ export interface TypedCell {
 export type ParsedCell =
     | string
     | number
+    | bigint
     | boolean
     | null
     | BitString
