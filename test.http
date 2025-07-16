@@ -11,15 +11,6 @@ POST {{host}}/parse
 Content-Type: application/json
 
 {
-  "schema": "message#_ len:uint7 {len <= 127} text:(bits len * 8) = Message;",
-  "cell": "te6cckEBAQEAFwAAKSioyuboQNrK5ubCzspA0txAxsrY2Whv0fw="
-}
-
-###
-POST {{host}}/parse
-Content-Type: application/json
-
-{
-  "schema": "message#_ len:uint7 {len <= 127} text:(bits len * 8) = Message;",
+  "schema": "message#_ len:(## 7) { len <= 127 } text:(bits (len * 8)) = Message;",
   "cell": "te6cckEBAQEAFwAAKSioyuboQNrK5ubCzspA0txAxsrY2Whv0fw="
 }
