@@ -55,6 +55,11 @@ export class MathExprEvaluator {
                     return left > right ? 1 : 0;
                 case '>=':
                     return left >= right ? 1 : 0;
+                case '=':
+                    return left === right ? 1 : 0;
+                case '.':
+                    // Bit selection: left.right means extract bit at position right from left
+                    return (left >> right) & 1;
                 default:
                     throw new Error(`Unknown operation: ${expr.operation}`);
             }
@@ -74,6 +79,7 @@ export class MathExprEvaluator {
             case '!':
                 return value ? 0 : 1;
             case '.':
+                // Bit selection operator - simplified implementation
                 return value;
             default:
                 throw new Error(`Unknown unary operation: ${operation}`);
