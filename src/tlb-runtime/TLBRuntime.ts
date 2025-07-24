@@ -1,4 +1,16 @@
-import { Builder, Slice, Cell, beginCell, Dictionary, parseTuple, serializeTuple, BitString } from '@ton/core';
+import {
+    Builder,
+    Slice,
+    Cell,
+    beginCell,
+    Dictionary,
+    parseTuple,
+    serializeTuple,
+    BitString,
+    Address,
+    ExternalAddress,
+    DictionaryKeyTypes,
+} from '@ton/core';
 import {
     TLBConstructor,
     TLBConstructorTag,
@@ -24,7 +36,11 @@ export type ParsedCell =
     | bigint
     | boolean
     | null
+    | unknown
     | BitString
+    | Address
+    | ExternalAddress
+    | Dictionary<DictionaryKeyTypes, ParsedCell>
     | Cell
     | { [key: string]: ParsedCell }
     | ParsedCell[]
