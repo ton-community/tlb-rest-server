@@ -137,13 +137,14 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
                 return this.deserializeConstructor(find.type, find.item, slice);
             }
         }
-        const result = this.deserializeByTypeName(this.lastTypeName, slice);
+        const result = this.deserializeByTypeName(this.lastTypeName, slice.clone());
         if (result.ok) {
             return result;
         }
         const types = this.types.keys();
         for (const typeName of types) {
-            const result = this.deserializeByTypeName(typeName, slice);
+            if (typeName === this.lastTypeName) continue; // Already tried
+            const result = this.deserializeByTypeName(typeName, slice.clone());
             if (result.ok) {
                 return result;
             }
