@@ -88,7 +88,7 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
             const tree = ast(tlbSource);
             const code = getTLBCodeByAST(tree, tlbSource);
             const pared = tlbSource.split('=');
-            const lastTypeName = pared[pared.length - 1].split(';')[0].trim();
+            const lastTypeName = pared[pared.length - 1].split(';')[0].trim().split(' ')[0].trim();
             if (lastTypeName) {
                 return {
                     ok: true,
