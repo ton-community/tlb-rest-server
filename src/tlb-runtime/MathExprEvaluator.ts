@@ -55,6 +55,8 @@ export class MathExprEvaluator {
                     return left > right ? 1 : 0;
                 case '>=':
                     return left >= right ? 1 : 0;
+                case '=':
+                    return left === right ? 1 : 0;
                 default:
                     throw new Error(`Unknown operation: ${expr.operation}`);
             }
