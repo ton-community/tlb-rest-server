@@ -377,6 +377,17 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
             }
 
             case 'TLBAddressType': {
+                if (slice.preloadUint(2) !== 2) {
+                    if (slice.remainingBits === 2) {
+                        return null;
+                    }
+                    const type = slice.loadUint(2);
+                    if (type === 1) {
+                        const bits = slice.loadUint(9);
+                        return new ExternalAddress(slice.loadUintBig(bits), bits);
+                    }
+                    // TODO add Anycast type === 3
+                }
                 return slice.loadAddress();
             }
 
