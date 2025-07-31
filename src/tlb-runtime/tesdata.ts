@@ -345,26 +345,26 @@ export const groupCorpus: TLBCorpus = {
                     {
                         kind: 'HashmapOptionType',
                         x: Dictionary.empty(Dictionary.Keys.BigUint(100))
-                          .set(3n, {
-                              kind: 'OptionType',
-                              x: {
-                                  kind: 'Maybe_just',
-                                  value: {
-                                      kind: 'Nat2',
-                                      x: 3,
-                                  },
-                              },
-                          })
-                          .set(5n, {
-                              kind: 'OptionType',
-                              x: {
-                                  kind: 'Maybe_just',
-                                  value: {
-                                      kind: 'Nat2',
-                                      x: 1,
-                                  },
-                              },
-                          }),
+                            .set(3n, {
+                                kind: 'OptionType',
+                                x: {
+                                    kind: 'Maybe_just',
+                                    value: {
+                                        kind: 'Nat2',
+                                        x: 3,
+                                    },
+                                },
+                            })
+                            .set(5n, {
+                                kind: 'OptionType',
+                                x: {
+                                    kind: 'Maybe_just',
+                                    value: {
+                                        kind: 'Nat2',
+                                        x: 1,
+                                    },
+                                },
+                            }),
                     },
                     'b5ee9c72410106010018000101c0010203d86002040101f4030001f0010166050001b085af7d0c',
                 ],
@@ -411,8 +411,8 @@ export const groupCorpus: TLBCorpus = {
                         x: {
                             kind: 'HashmapOneComb',
                             x: Dictionary.empty(Dictionary.Keys.BigUint(200))
-                              .set(1n, { kind: 'OneComb', t: 3, x: 6 })
-                              .set(19n, { kind: 'OneComb', t: 5, x: 4 }),
+                                .set(1n, { kind: 'OneComb', t: 3, x: 6 })
+                                .set(19n, { kind: 'OneComb', t: 5, x: 4 }),
                         },
                     },
                     'b5ee9c7241010401001a000101c0010203d8700203000ba0800000019a000ba180000002920ec1bd9e',
@@ -426,8 +426,8 @@ export const groupCorpus: TLBCorpus = {
                     {
                         kind: 'HashmapAugEUser',
                         x: Dictionary.empty(Dictionary.Keys.Uint(16))
-                          .set(5, { extra: { kind: 'FixedIntParam', y: 11 }, value: 8n })
-                          .set(6, { extra: { kind: 'FixedIntParam', y: 9 }, value: 3n }),
+                            .set(5, { extra: { kind: 'FixedIntParam', y: 11 }, value: 8n })
+                            .set(6, { extra: { kind: 'FixedIntParam', y: 9 }, value: 3n }),
                     },
                     'b5ee9c72410104010015000101c00102059c000c02030005558844000544881cb03ae0fb',
                 ],
@@ -547,9 +547,9 @@ export const groupCorpus: TLBCorpus = {
                     {
                         kind: 'HashmapEUser',
                         x: Dictionary.empty(Dictionary.Keys.Uint(8), Dictionary.Values.Uint(16))
-                          .set(0, 5)
-                          .set(1, 6)
-                          .set(2, 7),
+                            .set(0, 5)
+                            .set(1, 6)
+                            .set(2, 7),
                     },
                     'b5ee9c7241010601001d000101c0010201cd02050201200304000500016000050001a00005400078f2192257',
                 ],
@@ -562,8 +562,8 @@ export const groupCorpus: TLBCorpus = {
                     {
                         kind: 'HashmapVUIUser',
                         x: Dictionary.empty(Dictionary.Keys.BigUint(100))
-                          .set(6n, { kind: 'VarUIntegerUser', v: 5n })
-                          .set(7n, { kind: 'VarUIntegerUser', v: 3n }),
+                            .set(6n, { kind: 'VarUIntegerUser', v: 5n })
+                            .set(7n, { kind: 'VarUIntegerUser', v: 3n }),
                     },
                     'b5ee9c7241010401001e000101c001021bb18000000000000000000000003802030003082c0003081cf1308855',
                 ],
