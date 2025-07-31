@@ -715,8 +715,7 @@ export const groupCorpus: TLBCorpus = {
             '_ a:(## 1) b:a?(## 32) = ConditionalField;',
             [
                 [{ kind: 'ConditionalField', a: 1, b: 5 }, 'b5ee9c7241010101000700000980000002c098d97633'],
-                [{ kind: 'ConditionalField', a: 0, b: 5 }, 'b5ee9c7241010101000700000900000002c0c40cd45d'],
-                [{ kind: 'ConditionalField', a: 0, b: undefined }, 'b5ee9c7241010101000300000140f6d24034'],
+                [{ kind: 'ConditionalField', a: 0 }, 'b5ee9c7241010101000300000140f6d24034'],
             ],
         ],
         [
@@ -727,13 +726,13 @@ export const groupCorpus: TLBCorpus = {
             ],
         ],
         [
-            'tmpa$_ a:# b:# = Simple;a$_ x:(## 1) y:x?^Simple = ConditionalRef;',
+            '_ a:# b:# = Simple; _ x:(## 1) y:x?^Simple = ConditionalRef;',
             [
                 [
                     { kind: 'ConditionalRef', x: 1, y: { kind: 'Simple', a: 3, b: 4 } },
                     'b5ee9c7241010201000e000101c0010010000000030000000434fa1906',
                 ],
-                [{ kind: 'ConditionalRef', x: 0, y: undefined }, 'b5ee9c7241010101000300000140f6d24034'],
+                [{ kind: 'ConditionalRef', x: 0 }, 'b5ee9c7241010101000300000140f6d24034'],
             ],
         ],
         [
