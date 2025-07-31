@@ -435,7 +435,7 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
                 if (condition) {
                     return this.deserializeFieldType(fieldType.value, slice, variables);
                 }
-                return null;
+                return undefined;
             }
 
             case 'TLBTupleType': {
