@@ -334,12 +334,11 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         switch (fieldType.kind) {
             case 'TLBNumberType': {
                 const bits = evaluator.evaluate(fieldType.bits);
-                const value = slice.loadUintBig(bits);
-                const result = fieldType.signed ? this.toSignedNumber(value, bits) : value;
+                const value = this.loadBigInt(slice, bits, fieldType.signed);
                 if (bits <= 32) {
-                    return Number(result);
+                    return Number(value);
                 }
-                return result;
+                return value;
             }
 
             case 'TLBBoolType': {
@@ -632,15 +631,11 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         }
     }
 
-    private toSignedNumber(value: bigint, bits: number): bigint {
-        const maxUnsigned = 1n << BigInt(bits);
-        const signBit = 1n << (BigInt(bits) - 1n);
-
-        if (value && signBit) {
-            return value - maxUnsigned;
+    private loadBigInt(slice: Slice, bits: number, signed = false): bigint {
+        if (signed) {
+            return slice.loadIntBig(bits);
         }
-
-        return value;
+        return slice.loadUintBig(bits);
     }
 }
 

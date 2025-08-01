@@ -708,8 +708,11 @@ export const groupCorpus: TLBCorpus = {
             ],
         ],
         [
-            'a$_ s:(3 * int5) = TupleCheck;',
-            [[{ kind: 'TupleCheck', s: [5, 6, 7] }, 'b5ee9c72410101010004000003298f2b4c6f9c']],
+            '_ a:(3 * uint4) b:(3 * int4) = TupleCheck;',
+            [
+                [{ kind: 'TupleCheck', a: [1, 2, 3], b: [-1, -2, -3] }, 'b5ee9c72410101010005000006123fede0dabd81'],
+                [{ kind: 'TupleCheck', a: [1, 8, 15], b: [-1, 5, -5] }, 'b5ee9c7241010101000500000618ff5bf41fe366'],
+            ],
         ],
         [
             '_ a:(## 1) b:a?(## 32) = ConditionalField;',
