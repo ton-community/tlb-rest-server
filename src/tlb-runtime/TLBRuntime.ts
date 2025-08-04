@@ -267,11 +267,7 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
                     subfields[subfield.name] = this.deserializeField(subfield, refSlice, variables);
                 }
 
-                if (!field.anonymous) {
-                    value[field.name] = subfields;
-                } else {
-                    value = { ...value, ...subfields };
-                }
+                value[field.name] = subfields;
             } else {
                 if (field.fieldType.kind === 'TLBNamedType' && constructor.parametersMap.get(field.fieldType.name)) {
                     const param = constructor.parametersMap.get(field.fieldType.name) as TLBParameter;
@@ -279,11 +275,7 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
                     field.fieldType = args[paramIndex];
                 }
 
-                const fieldValue = this.deserializeField(field, slice, variables);
-
-                if (!field.anonymous) {
-                    value[field.name] = fieldValue;
-                }
+                value[field.name] = this.deserializeField(field, slice, variables);
             }
         }
 
