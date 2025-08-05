@@ -227,21 +227,21 @@ export const groupCorpus: TLBCorpus = {
             ],
         ],
         [
-            '_ value:int257 = IntType; _ value:uint257 = UintType;',
+            'a#a value:int257 = IntType; b#b value:uint256 = UintType;',
             [
                 [
                     {
                         kind: 'IntType',
-                        value: -1n,
+                        value: -115792089237316195423570985008687907853269984665640564039457584007913129639935n,
                     },
-                    'b5ee9c72410101010023000041ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc020228284',
+                    'b5ee9c72410101010023000041a8000000000000000000000000000000000000000000000000000000000000000c832f60b1',
                 ],
                 [
                     {
                         kind: 'UintType',
-                        value: 2n,
+                        value: 115792089237316195423570985008687907853269984665640564039457584007913129639935n,
                     },
-                    'b5ee9c7241010101002300004100000000000000000000000000000000000000000000000000000000000000014064cbbc8e',
+                    'b5ee9c72410101010023000041bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8a8a15cf2',
                 ],
             ],
         ],
@@ -271,10 +271,10 @@ export const groupCorpus: TLBCorpus = {
             ],
         ],
         [
-            `${TLBStd.Bool} _ a:Bool = BoolUser;`,
+            `${TLBStd.Bool} _ x:Bool = BoolUser;`,
             [
-                [{ kind: 'BoolUser', a: { kind: 'Bool', value: true } }, 'b5ee9c72410101010003000001c08ee9b6b6'],
-                [{ kind: 'BoolUser', a: { kind: 'Bool', value: false } }, 'b5ee9c7241010101000300000140f6d24034'],
+                [{ kind: 'BoolUser', x: true }, 'b5ee9c72410101010003000001c08ee9b6b6'],
+                [{ kind: 'BoolUser', x: false }, 'b5ee9c7241010101000300000140f6d24034'],
             ],
         ],
         [
@@ -460,21 +460,21 @@ export const groupCorpus: TLBCorpus = {
             ],
         ],
         [
-            `${TLBStd.Bit} _ x:Bit = BitUser;`,
+            `${TLBStd.Bit} a#a x:Bit = BitUser;`,
             [
                 [
                     {
                         kind: 'BitUser',
                         x: false,
                     },
-                    'b5ee9c7241010101000300000140f6d24034',
+                    'b5ee9c72410101010003000001a4f3edea10',
                 ],
                 [
                     {
                         kind: 'BitUser',
                         x: true,
                     },
-                    'b5ee9c72410101010003000001c08ee9b6b6',
+                    'b5ee9c72410101010003000001ac3cb5339a',
                 ],
             ],
         ],

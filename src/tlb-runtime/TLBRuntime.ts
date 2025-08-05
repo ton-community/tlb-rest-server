@@ -22,7 +22,7 @@ import {
 } from '@ton-community/tlb-codegen';
 import { ast } from '@ton-community/tlb-parser';
 
-import { bitsToString, stringToBits } from './common';
+import { bitsToString, normalizeBitString, stringToBits } from './common';
 import { MathExprEvaluator } from './MathExprEvaluator';
 import { Result, unwrap } from './Result';
 
@@ -196,9 +196,8 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
     }
 
     private deserializeType(type: TLBType, data: Slice, args: TLBFieldType[] = []): Result<T> {
-        // Try each constructor in the type
         for (const constructor of type.constructors) {
-            const result = this.deserializeConstructor(type, constructor, data, args);
+            const result = this.deserializeConstructor(type, constructor, data.clone(), args);
             if (result.ok) {
                 return result;
             }
@@ -216,33 +215,18 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         slice: Slice,
         args: TLBFieldType[] = [],
     ): Result<T> {
-        // Save position to restore if the constructor doesn't match
-        const bits = slice.remainingBits;
-        const refs = slice.remainingRefs;
         const kind = type.constructors.length > 1 ? `${type.name}_${constructor.name}` : type.name;
-
         // Check tag if present
         if (constructor.tag.bitLen > 0) {
             const len = constructor.tag.bitLen;
-            const preloadedTag = `0b${slice.preloadUint(len).toString(2).padStart(len, '0')}`;
+            const preloadedTag = `0b${slice.loadUint(len).toString(2).padStart(len, '0')}`;
             const expectedTag = tagKey(constructor.tag);
             if (preloadedTag !== expectedTag) {
-                // Restore position and try next constructor
-                // Reset bit position
-                slice.skip(-bits + slice.remainingBits);
-
-                // Reset refs by loading them if needed
-                const refsToReset = -refs + slice.remainingRefs;
-                for (let i = 0; i < refsToReset; i++) {
-                    slice.loadRef();
-                }
                 return {
                     ok: false,
                     error: new TLBDataError(`Failed to deserialize type ${kind}`),
                 };
             }
-            // Consume the tag
-            slice.loadUint(constructor.tag.bitLen);
         }
 
         // Initialize variables map for constraint evaluation
@@ -283,12 +267,7 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         const evaluator = new MathExprEvaluator(variables);
         for (const constraint of constructor.constraints) {
             if (evaluator.evaluate(constraint) !== 1) {
-                // Constraint failed, try next constructor
-                // Reset bit position
-                slice.skip(-bits + slice.remainingBits);
-
-                // Reset refs by loading them if needed
-                const refsToReset = -refs + slice.remainingRefs;
+                const refsToReset = slice.remainingRefs;
                 for (let i = 0; i < refsToReset; i++) {
                     slice.loadRef();
                 }
@@ -346,7 +325,10 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
                 if (this.config.autoText && bits % 8 === 0) {
                     return bitsToString(raw);
                 }
-                return raw;
+                if (bits === 1) {
+                    return raw.at(0);
+                }
+                return normalizeBitString(raw);
             }
 
             case 'TLBNamedType': {

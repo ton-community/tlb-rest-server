@@ -1,6 +1,6 @@
 import { Cell } from '@ton/core';
 
-import { parseCell, encodeCell } from './parser';
+import { parseCell, encodeCell, replacer } from './parser';
 import { groupCorpusFlat } from './tesdata';
 
 describe('TLBRuntime', () => {
@@ -8,7 +8,7 @@ describe('TLBRuntime', () => {
         describe.each(Object.keys(groupCorpusFlat))('%s', (group) => {
             it.each(groupCorpusFlat[group])('deserialize %s', (schema, expected, boc) => {
                 const actual = parseCell(schema, Cell.fromHex(boc));
-                expect(actual).toEqual(expected);
+                expect(JSON.stringify(actual, replacer)).toEqual(JSON.stringify(expected, replacer));
             });
         });
     });

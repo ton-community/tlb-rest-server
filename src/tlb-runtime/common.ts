@@ -18,3 +18,18 @@ export function bitsToString(bits: BitString): string {
 
     return text;
 }
+
+export function normalizeBitString(bits: BitString): BitString {
+    const length = bits.length;
+    const newBuffer = Buffer.alloc(Math.ceil(length / 8));
+
+    for (let i = 0; i < length; i++) {
+        const byteIndex = Math.floor(i / 8);
+        const bitIndex = 7 - (i % 8);
+
+        if (bits.at(i)) {
+            newBuffer[byteIndex] |= 1 << bitIndex;
+        }
+    }
+    return new BitString(newBuffer, 0, length);
+}
