@@ -283,7 +283,7 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
     // FIXME
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private deserializeField(field: TLBField, slice: Slice, variables: Map<string, number>): any {
-        const val = this.deserializeFieldType(field.fieldType, slice, variables);
+        const value = this.deserializeFieldType(field.fieldType, slice, variables);
 
         if (
             field.name &&
@@ -291,10 +291,10 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
                 field.fieldType.kind === 'TLBVarIntegerType' ||
                 field.fieldType.kind === 'TLBBoolType')
         ) {
-            variables.set(field.name, Number(val));
+            variables.set(field.name, Number(value));
         }
 
-        return val;
+        return value;
     }
 
     // FIXME
@@ -332,12 +332,11 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
             }
 
             case 'TLBNamedType': {
-                const type = this.types.get(fieldType.name);
-
                 if (fieldType.name === 'Bool') {
                     return slice.loadBit();
                 }
 
+                const type = this.types.get(fieldType.name);
                 if (!type) {
                     throw new TLBDataError(`Type ${fieldType.name} not found in TL-B schema`);
                 }
@@ -365,7 +364,7 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
             }
 
             case 'TLBCellType': {
-                return slice.loadMaybeRef();
+                return slice.loadRef();
             }
 
             case 'TLBCellInsideType': {
