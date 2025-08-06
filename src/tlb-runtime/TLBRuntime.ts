@@ -197,8 +197,19 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
 
     private deserializeType(type: TLBType, data: Slice, args: TLBFieldType[] = []): Result<T> {
         for (const constructor of type.constructors) {
-            const result = this.deserializeConstructor(type, constructor, data.clone(), args);
+            const prev = data.clone();
+            const result = this.deserializeConstructor(type, constructor, prev, args);
             if (result.ok) {
+                const bitsUsed = data.remainingBits - prev.remainingBits;
+                const refsUsed = data.remainingRefs - prev.remainingRefs;
+
+                if (bitsUsed > 0) {
+                    data.skip(bitsUsed);
+                }
+                for (let i = 0; i < refsUsed; i++) {
+                    data.loadRef();
+                }
+
                 return result;
             }
         }
