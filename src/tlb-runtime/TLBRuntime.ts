@@ -72,12 +72,13 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         config.autoText = config.autoText || true;
         for (const type of this.types.values()) {
             for (const item of type.constructors) {
-                if (item.tag.bitLen === 0) continue;
-                if (item.tag.bitLen > this.maxSizeTag) {
-                    this.maxSizeTag = item.tag.bitLen;
+                if (item.tag.bitLen > 0) {
+                    if (item.tag.bitLen > this.maxSizeTag) {
+                        this.maxSizeTag = item.tag.bitLen;
+                    }
+                    const key = tagKey(item.tag);
+                    this.tagMap.set(key, { type, item });
                 }
-                const key = tagKey(item.tag);
-                this.tagMap.set(key, { type, item });
             }
         }
     }
@@ -103,7 +104,9 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         const savedBits = slice.remainingBits;
         const savedRefs = slice.remainingRefs;
         const maxLen = Math.min(this.maxSizeTag, savedBits);
+
         for (let len = maxLen; len >= 1; len--) {
+            if (savedBits < len) continue;
             const tagValue = slice.preloadUint(len);
             const key = tagKey({
                 bitLen: len,
@@ -113,10 +116,6 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
             if (type) {
                 return type;
             }
-        }
-        slice.skip(-savedBits + slice.remainingBits);
-        for (let i = 0; i < -savedRefs + slice.remainingRefs; i++) {
-            slice.loadRef();
         }
 
         return null;
@@ -230,6 +229,12 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         // Check tag if present
         if (constructor.tag.bitLen > 0) {
             const len = constructor.tag.bitLen;
+            if (slice.remainingBits < len) {
+                return {
+                    ok: false,
+                    error: new TLBDataError(`Not enough bits to read tag for ${kind}`),
+                };
+            }
             const preloadedTag = `0b${slice.loadUint(len).toString(2).padStart(len, '0')}`;
             const expectedTag = tagKey(constructor.tag);
             if (preloadedTag !== expectedTag) {
@@ -253,16 +258,53 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         for (const field of constructor.fields) {
             // field.subFields.length
             if (field.subFields.length > 0) {
-                const ref = slice.loadRef();
-                const refSlice = ref.beginParse(true);
-                // FIXME
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const subfields: any = {};
-                for (const subfield of field.subFields) {
-                    subfields[subfield.name] = this.deserializeField(subfield, refSlice, variables);
+                if (slice.remainingRefs === 0) {
+                    return {
+                        ok: false,
+                        error: new TLBDataError(`No more references available for field ${field.name}`),
+                    };
                 }
+                const ref = slice.loadRef();
 
-                value[field.name] = subfields;
+                // Special case: if we have only one subfield, handle it directly
+                if (field.subFields.length === 1) {
+                    const subfield = field.subFields[0];
+                    if (subfield.fieldType.kind === 'TLBCellType') {
+                        // ^Cell - just return the cell
+                        value[field.name] = ref;
+                    } else if (subfield.fieldType.kind === 'TLBNamedType') {
+                        // ^SomeType - deserialize the type from the reference
+                        const refSlice = ref.beginParse(true);
+                        const type = this.types.get(subfield.fieldType.name);
+                        if (type) {
+                            const result = this.deserializeType(type, refSlice, subfield.fieldType.arguments);
+                            if (result.ok) {
+                                value[field.name] = result.value;
+                            } else {
+                                return result;
+                            }
+                        } else {
+                            return {
+                                ok: false,
+                                error: new TLBDataError(`Type ${subfield.fieldType.name} not found`),
+                            };
+                        }
+                    } else {
+                        // Other single subfield types
+                        const refSlice = ref.beginParse(true);
+                        value[field.name] = this.deserializeField(subfield, refSlice, variables);
+                    }
+                } else {
+                    const refSlice = ref.beginParse(true);
+                    // FIXME
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const subfields: any = {};
+                    for (const subfield of field.subFields) {
+                        subfields[subfield.name] = this.deserializeField(subfield, refSlice, variables);
+                    }
+
+                    value[field.name] = subfields;
+                }
             } else {
                 if (field.fieldType.kind === 'TLBNamedType' && constructor.parametersMap.get(field.fieldType.name)) {
                     const param = constructor.parametersMap.get(field.fieldType.name) as TLBParameter;
@@ -375,11 +417,20 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
             }
 
             case 'TLBCellType': {
+                if (slice.remainingRefs === 0) {
+                    throw new TLBDataError('No more references available for TLBCellType');
+                }
                 return slice.loadRef();
             }
 
             case 'TLBCellInsideType': {
+                if (slice.remainingRefs === 0) {
+                    throw new TLBDataError('No more references available for TLBCellInsideType');
+                }
                 const ref = slice.loadRef();
+                if (fieldType.value.kind === 'TLBCellType') {
+                    return ref;
+                }
                 const refSlice = ref.beginParse();
                 return this.deserializeFieldType(fieldType.value, refSlice, variables);
             }
