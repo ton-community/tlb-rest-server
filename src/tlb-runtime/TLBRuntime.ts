@@ -102,7 +102,6 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
 
     private findByTag(slice: Slice): { type: TLBType; item: TLBConstructor } | null {
         const savedBits = slice.remainingBits;
-        const savedRefs = slice.remainingRefs;
         const maxLen = Math.min(this.maxSizeTag, savedBits);
 
         for (let len = maxLen; len >= 1; len--) {
@@ -136,11 +135,14 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
                 return this.deserializeConstructor(find.type, find.item, slice);
             }
         }
-        const result = this.deserializeByTypeName(this.lastTypeName, slice.clone());
-        if (result.ok) {
-            return result;
-        }
-        const types = this.types.keys();
+
+        const types = Array.from(this.types.keys());
+        try {
+            const result = this.deserializeByTypeName(this.lastTypeName, slice.clone());
+            if (result.ok) {
+                return result;
+            }
+        } catch (_) {}
         for (const typeName of types) {
             if (typeName === this.lastTypeName) continue; // Already tried
             const result = this.deserializeByTypeName(typeName, slice.clone());
