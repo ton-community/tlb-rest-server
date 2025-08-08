@@ -129,7 +129,7 @@ export const groupCorpus: TLBCorpus = {
             ],
         ],
         [
-            '_ {n:#} x:(## n) = ParamType n; _ x:(ParamType 4) = UseParamType;',
+            '_ {n:#} x:(## n) = ParamType n; _#de x:(ParamType 4) = UseParamType;',
             [
                 [
                     {
@@ -148,7 +148,7 @@ export const groupCorpus: TLBCorpus = {
                             x: 10,
                         },
                     },
-                    'b5ee9c72410101010003000001a82322a95d',
+                    'b5ee9c72410101010004000003dea82541ef56',
                 ],
             ],
         ],

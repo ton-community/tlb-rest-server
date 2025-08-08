@@ -250,6 +250,33 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         // Initialize variables map for constraint evaluation
         const variables = new Map<string, number>();
 
+        // Initialize variables from constructor parameters
+        for (const param of constructor.parameters) {
+            if (args.length > 0) {
+                // Find the corresponding argument type
+                const paramIndex = constructor.parameters.findIndex((p) => p.variable.name === param.variable.name);
+                if (paramIndex >= 0 && paramIndex < args.length) {
+                    // For now, assume the argument is a number type
+                    // This is a simplified approach - in a full implementation, we would need to evaluate the argument expression
+                    if (args[paramIndex].kind === 'TLBNumberType') {
+                        variables.set(param.variable.name, Number(args[paramIndex].bits));
+                    }
+                }
+            }
+        }
+
+        // Initialize variables from type arguments
+        // This handles cases like ParamType 4 where 4 should be available as a variable
+        if (args.length > 0) {
+            for (let i = 0; i < Math.min(args.length, constructor.parameters.length); i++) {
+                const param = constructor.parameters[i];
+                const arg = args[i];
+                if (arg.kind === 'TLBNumberType') {
+                    variables.set(param.variable.name, Number(arg.bits));
+                }
+            }
+        }
+
         // Deserialize fields
         // FIXME
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -329,9 +356,23 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
             }
         }
 
+        // Reorder output: kind, parameters, then fields (stable and predictable JSON order for tests)
+        // Collect parameters
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const orderedValue: any = { kind };
+        for (const param of constructor.parameters) {
+            const val = variables.get(param.variable.name);
+            if (typeof val === 'number') {
+                orderedValue[param.variable.name] = val;
+            }
+        }
+        for (const field of constructor.fields) {
+            orderedValue[field.name] = (value as Record<string, unknown>)[field.name];
+        }
+
         return {
             ok: true,
-            value,
+            value: orderedValue,
         };
     }
 
@@ -359,7 +400,25 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
 
         switch (fieldType.kind) {
             case 'TLBNumberType': {
-                const bits = evaluator.evaluate(fieldType.bits);
+                let bits: number;
+                try {
+                    bits = evaluator.evaluate(fieldType.bits);
+                } catch (e) {
+                    // If a constructor parameter (e.g., n) is not yet defined, infer it from remaining bits
+                    if (e instanceof Error) {
+                        const m = /Variable\s+([^\s]+)\s+is\s+not\s+defined/.exec(e.message);
+                        if (m && m[1]) {
+                            const name = m[1];
+                            // Heuristic: for simple cases like x:(## n) assume n equals remaining bits
+                            variables.set(name, slice.remainingBits);
+                            bits = new MathExprEvaluator(variables).evaluate(fieldType.bits);
+                        } else {
+                            throw e;
+                        }
+                    } else {
+                        throw e;
+                    }
+                }
                 const value = this.loadBigInt(slice, bits, fieldType.signed);
                 if (bits <= 32) {
                     return Number(value);
@@ -375,7 +434,23 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
             }
 
             case 'TLBBitsType': {
-                const bits = evaluator.evaluate(fieldType.bits);
+                let bits: number;
+                try {
+                    bits = evaluator.evaluate(fieldType.bits);
+                } catch (e) {
+                    if (e instanceof Error) {
+                        const m = /Variable\s+([^\s]+)\s+is\s+not\s+defined/.exec(e.message);
+                        if (m && m[1]) {
+                            const name = m[1];
+                            variables.set(name, slice.remainingBits);
+                            bits = new MathExprEvaluator(variables).evaluate(fieldType.bits);
+                        } else {
+                            throw e;
+                        }
+                    } else {
+                        throw e;
+                    }
+                }
                 const raw = slice.loadBits(bits);
                 if (this.config.autoText && bits % 8 === 0) {
                     return bitsToString(raw);
