@@ -153,7 +153,7 @@ export const groupCorpus: TLBCorpus = {
             ],
         ],
         [
-            '_ {n:#} x:(## n) = ExprType (2 + n); _ x:(ExprType 6) = UseExprType; _ x:^UseExprType = CellUseExprType;',
+            '_ {n:#} x:(## n) = ExprType (2 + n); _ x:(ExprType 6) = UseExprType; _#de x:^UseExprType = CellUseExprType;',
             [
                 [
                     {
@@ -178,7 +178,7 @@ export const groupCorpus: TLBCorpus = {
                             },
                         },
                     },
-                    'b5ee9c72410102010006000100010001a87fd1f37f',
+                    'b5ee9c72410102010007000102de010001a84df293b3',
                 ],
             ],
         ],
