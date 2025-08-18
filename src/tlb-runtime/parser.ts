@@ -1,14 +1,13 @@
 import { Address, BitString, Cell } from '@ton/core';
 
-import { unwrap } from './Result';
 import { ParsedCell, parseTLB } from './TLBRuntime';
 
 export function parseCell(schema: string, data: Cell | string): ParsedCell {
-    return unwrap(parseTLB(schema).deserialize(data));
+    return parseTLB(schema).parseCell(data);
 }
 
 export function encodeCell(schema: string, data: ParsedCell | string): Cell {
-    return unwrap(parseTLB(schema).serialize(data)).endCell();
+    return parseTLB(schema).encodeCell(data);
 }
 
 // FIXME

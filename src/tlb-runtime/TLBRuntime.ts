@@ -22,7 +22,7 @@ import {
 } from '@ton-community/tlb-codegen';
 import { ast } from '@ton-community/tlb-parser';
 
-import { bitsToString, normalizeBitString, stringToBits } from './common';
+import { bitsToString, normalizeBitString, stringToBits, toCell } from './common';
 import { MathExprEvaluator } from './MathExprEvaluator';
 import { Result, unwrap } from './Result';
 
@@ -64,7 +64,8 @@ export interface TLBRuntimeConfig {
 export class TLBRuntime<T extends ParsedCell = ParsedCell> {
     private readonly tagMap = new Map<string, { type: TLBType; item: TLBConstructor }>();
     private maxSizeTag = 0;
-    constructor(
+    private constructor(
+        readonly schema: string,
         private readonly types: Map<string, TLBType>,
         private readonly lastTypeName: string,
         private readonly config: Partial<TLBRuntimeConfig> = {},
@@ -83,21 +84,44 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         }
     }
 
-    static from<T extends ParsedCell = ParsedCell>(tlbSource: string): Result<TLBRuntime<T>> {
-        /* eslint no-empty: ["error", { "allowEmptyCatch": true }] */
+    static from<T extends ParsedCell = ParsedCell>(
+        schema: string,
+        config: Partial<TLBRuntimeConfig> = {},
+    ): Result<TLBRuntime<T>> {
         try {
-            const tree = ast(tlbSource);
-            const code = getTLBCodeByAST(tree, tlbSource);
-            const pared = tlbSource.split('=');
+            const tree = ast(schema);
+            const code = getTLBCodeByAST(tree, schema);
+            const pared = schema.split('=');
             const lastTypeName = pared[pared.length - 1].split(';')[0].trim().split(' ')[0].trim();
-            if (lastTypeName) {
-                return {
-                    ok: true,
-                    value: new TLBRuntime(code.types, lastTypeName),
-                };
-            }
-        } catch (_) {}
-        return { ok: false, error: new TLBSchemaError('Bad Schema') };
+            return {
+                success: true,
+                value: new TLBRuntime(schema, code.types, lastTypeName, config),
+            };
+        } catch (error) {
+            void error;
+        }
+        return { success: false, error: new TLBSchemaError('Bad Schema') };
+    }
+
+    changeSchema(schema: string): Result<TLBRuntime<T>> {
+        if (this.schema === schema) {
+            return {
+                success: true,
+                value: this,
+            };
+        }
+        return TLBRuntime.from(schema, this.config);
+    }
+
+    parseCell(data: Cell | string): ParsedCell {
+        return unwrap(this.deserialize(data));
+    }
+
+    encodeCell(data: ParsedCell | string): Cell {
+        if (typeof data === 'string') {
+            data = JSON.parse(data) as T;
+        }
+        return unwrap(this.serialize(data as T)).endCell();
     }
 
     private findByTag(slice: Slice): { type: TLBType; item: TLBConstructor } | null {
@@ -122,11 +146,11 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
 
     deserialize(data: Cell | string, findByTag = false): Result<T> {
         if (typeof data === 'string') {
-            try {
-                data = Cell.fromBase64(data);
-            } catch (_) {
-                return { ok: false, error: new TLBDataError('Bad BOC string') };
+            const result = toCell(data);
+            if (!result.success) {
+                return result;
             }
+            data = result.value;
         }
         const slice = data.asSlice();
         if (findByTag) {
@@ -139,19 +163,21 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         const types = Array.from(this.types.keys());
         try {
             const result = this.deserializeByTypeName(this.lastTypeName, slice.clone());
-            if (result.ok) {
+            if (result.success) {
                 return result;
             }
-        } catch (_) {}
+        } catch (error) {
+            void error;
+        }
         for (const typeName of types.slice().reverse()) {
             if (typeName === this.lastTypeName) continue; // Already tried
             const result = this.deserializeByTypeName(typeName, slice.clone());
-            if (result.ok) {
+            if (result.success) {
                 return result;
             }
         }
 
-        return { ok: false, error: new TLBDataError('No matching constructor') };
+        return { success: false, error: new TLBDataError('No matching constructor') };
     }
 
     // Deserialize data from a Slice based on a TL-B type name
@@ -159,7 +185,7 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         const type = this.types.get(typeName);
         if (!type) {
             return {
-                ok: false,
+                success: false,
                 error: new TLBDataError(`Type ${typeName} not found in TL-B schema`),
             };
         }
@@ -170,7 +196,7 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         const typeKind = (data as TypedCell).kind;
         if (!typeKind) {
             return {
-                ok: false,
+                success: false,
                 error: new TLBDataError('Data must by typed'),
             };
         }
@@ -184,14 +210,14 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         const type = this.types.get(typeName);
         if (!type) {
             return {
-                ok: false,
+                success: false,
                 error: new TLBDataError(`Type ${typeName} not found in TL-B schema`),
             };
         }
         const value = beginCell();
         this.serializeType(type, data, value);
         return {
-            ok: true,
+            success: true,
             value,
         };
     }
@@ -200,7 +226,7 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         for (const constructor of type.constructors) {
             const prev = data.clone();
             const result = this.deserializeConstructor(type, constructor, prev, args);
-            if (result.ok) {
+            if (result.success) {
                 const bitsUsed = data.remainingBits - prev.remainingBits;
                 const refsUsed = data.remainingRefs - prev.remainingRefs;
 
@@ -216,7 +242,7 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         }
 
         return {
-            ok: false,
+            success: false,
             error: new TLBDataError(`Failed to deserialize type ${type.name} no matching constructor found`),
         };
     }
@@ -233,7 +259,7 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
             const len = constructor.tag.bitLen;
             if (slice.remainingBits < len) {
                 return {
-                    ok: false,
+                    success: false,
                     error: new TLBDataError(`Not enough bits to read tag for ${kind}`),
                 };
             }
@@ -241,7 +267,7 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
             const expectedTag = tagKey(constructor.tag);
             if (preloadedTag !== expectedTag) {
                 return {
-                    ok: false,
+                    success: false,
                     error: new TLBDataError(`Failed to deserialize type ${kind}`),
                 };
             }
@@ -264,7 +290,9 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
                     } else if (arg.kind === 'TLBNumberType') {
                         argValue = evaluator.evaluate(arg.bits);
                     }
-                } catch (_) {}
+                } catch (error) {
+                    void error;
+                }
 
                 if (param.argName && typeof argValue === 'number') {
                     variables.set(param.argName, argValue);
@@ -278,7 +306,9 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
                         // Simple case: parameter is a plain variable passed directly
                         variables.set(param.variable.name, argValue);
                     }
-                } catch (_) {}
+                } catch (error) {
+                    void error;
+                }
             }
         }
 
@@ -294,7 +324,7 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
             if (field.subFields.length > 0) {
                 if (slice.remainingRefs === 0) {
                     return {
-                        ok: false,
+                        success: false,
                         error: new TLBDataError(`No more references available for field ${field.name}`),
                     };
                 }
@@ -312,14 +342,14 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
                         const type = this.types.get(subfield.fieldType.name);
                         if (type) {
                             const result = this.deserializeType(type, refSlice, subfield.fieldType.arguments);
-                            if (result.ok) {
+                            if (result.success) {
                                 value[field.name] = result.value;
                             } else {
                                 return result;
                             }
                         } else {
                             return {
-                                ok: false,
+                                success: false,
                                 error: new TLBDataError(`Type ${subfield.fieldType.name} not found`),
                             };
                         }
@@ -355,7 +385,7 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         for (const constraint of constructor.constraints) {
             if (evaluator.evaluate(constraint) !== 1) {
                 return {
-                    ok: false,
+                    success: false,
                     error: new TLBDataError(`Failed to deserialize type ${kind} due to constraint`),
                 };
             }
@@ -381,7 +411,7 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
         }
 
         return {
-            ok: true,
+            success: true,
             value: orderedValue,
         };
     }
@@ -687,6 +717,9 @@ export class TLBRuntime<T extends ParsedCell = ParsedCell> {
             }
 
             case 'TLBAddressType': {
+                if (typeof value === 'string') {
+                    value = Address.parse(value);
+                }
                 builder.storeAddress(value);
                 break;
             }

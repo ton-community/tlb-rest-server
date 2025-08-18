@@ -1,20 +1,22 @@
-import { TLBRuntimeError } from './TLBRuntime';
-
-export interface Ok<T> {
-    readonly ok: true;
+export interface Success<T> {
+    readonly success: true;
     readonly value: T;
 }
 
-export interface Err<E = Error> {
-    readonly ok: false;
+export interface Failure<E = Error> {
+    readonly success: false;
     readonly error: E;
 }
 
-export type Result<T, E = Error> = Ok<T> | Err<E>;
+export type Result<T, E = Error> = Success<T> | Failure<E>;
 
-export function unwrap<T, E = Error>(res: Result<T, E>): T {
-    if (res.ok) {
-        return res.value;
+export function error<E = Error>(result: E): Error {
+    return result instanceof Error ? result : new Error(String(result));
+}
+
+export function unwrap<T, E = Error>(result: Result<T, E>): T {
+    if (result.success) {
+        return result.value;
     }
-    throw res.error instanceof Error ? res.error : new TLBRuntimeError(String(res.error));
+    throw error(result.error);
 }

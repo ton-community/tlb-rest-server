@@ -1,6 +1,9 @@
 import { Buffer } from 'node:buffer';
 
-import { BitString } from '@ton/core';
+import { BitString, Cell } from '@ton/core';
+
+import { TLBDataError } from './TLBRuntime';
+import { Result } from './Result';
 
 export function stringToBits(text: string): BitString {
     const bytes = Buffer.from(text, 'utf-8');
@@ -32,4 +35,16 @@ export function normalizeBitString(bits: BitString): BitString {
         }
     }
     return new BitString(newBuffer, 0, length);
+}
+
+export function toCell(data: string): Result<Cell> {
+    try {
+        return { success: true, value: Cell.fromBase64(data) };
+    } catch (_) {
+        try {
+            return { success: true, value: Cell.fromHex(data) };
+        } catch (_) {
+            return { success: false, error: new TLBDataError('Bad BoC string') };
+        }
+    }
 }
