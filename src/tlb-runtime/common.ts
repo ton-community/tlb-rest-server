@@ -1,5 +1,3 @@
-import { Buffer } from 'node:buffer';
-
 import { BitString, Cell } from '@ton/core';
 
 import { TLBDataError } from './TLBRuntime';
