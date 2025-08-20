@@ -196,7 +196,7 @@ export const groupCorpus: TLBCorpus = {
             ],
         ],
         [
-            'a$0 {n:#} = ParamConstructor n; b$1 {n:#} = Constructor (n + 1);',
+            'a$0 {n:#} = ParamConstructor n; b$1 {n:#} = ParamConstructor (n + 1);',
             [
                 [
                     {
@@ -210,7 +210,7 @@ export const groupCorpus: TLBCorpus = {
                         kind: 'ParamConstructor_b',
                         n: 3,
                     },
-                    'b5ee9c7241010101000300000140f6d24034',
+                    'b5ee9c72410101010003000001c08ee9b6b6',
                 ],
             ],
         ],
