@@ -1,10 +1,11 @@
 import { constants } from 'node:http2';
 
+import { parseCell } from '@ton-community/tlb-runtime';
+
 import { ResponseDTO } from '../../core/dtos';
 import { findMetaForSchema } from '../../core/tlb-meta/tlb-meta';
 import { RequestHandlerBody } from '../../core/types';
 import { tryParseCell } from '../../tlb-parser';
-import { parseCell } from '../../tlb-runtime';
 import { ParseTlbBody, TryParseTlbBody } from './parser.schemas';
 
 export const handleParseRequest: RequestHandlerBody<ParseTlbBody> = async (req, res, next) => {

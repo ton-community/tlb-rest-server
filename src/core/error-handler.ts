@@ -2,9 +2,9 @@ import { constants } from 'node:http2';
 
 import { ErrorRequestHandler } from 'express';
 import { ZodError } from 'zod';
+import { TLBRuntimeError } from '@ton-community/tlb-runtime';
 
 import { TryParseError } from '../tlb-parser/try-parse.error';
-import { TLBRuntimeError } from '../tlb-runtime';
 import { ResponseDTO } from './dtos';
 import { logger } from './logger';
 

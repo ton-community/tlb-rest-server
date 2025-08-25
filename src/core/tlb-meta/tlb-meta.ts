@@ -1,4 +1,5 @@
-import { ParsedCell } from '../../tlb-runtime/TLBRuntime';
+import { ParsedCell } from '@ton-community/tlb-runtime';
+
 import { cleanSchema } from './utils';
 
 type TlbMeta = {
